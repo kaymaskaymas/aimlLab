@@ -79,3 +79,5 @@ def BestFirstSearch():
 
 result = BestFirstSearch()
 print("Best First Search Path >>>>> {} <<<<{}>>>>".format(Closed, result))
+# Enter Source node >> S
+# Enter Goal node >> K
