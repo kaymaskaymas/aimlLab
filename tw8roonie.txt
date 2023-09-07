@@ -1,0 +1,53 @@
+import numpy as np
+import pandas as pd
+
+# Read the CSV file
+emails = pd.read_csv('./forTw8.csv')
+
+# Process email text
+def process_email(text):
+    return set(text.lower().split())
+
+# Add processed words column to DataFrame
+emails['words'] = emails['text'].apply(process_email)
+
+# Calculate total number of emails and spam emails
+num_emails = len(emails)
+num_spam = emails['spam'].sum()
+
+# Print basic statistics
+print("Number of emails:", num_emails)
+print("Number of spam emails:", num_spam)
+print("Probability of spam:", num_spam / num_emails)
+print()
+
+# Train the model
+model = {}
+for _, email in emails.iterrows():
+    for word in email['words']:
+        model.setdefault(word, {'spam': 1, 'ham': 1})
+        model[word][('spam', 'ham')[email['spam']]] += 1
+
+# Predict using Bayes
+def predict_bayes(word):
+    word = word.lower()
+    spam_count = model.get(word, {'spam': 1, 'ham': 1})['spam']
+    ham_count = model.get(word, {'spam': 1, 'ham': 1})['ham']
+    return spam_count / (spam_count + ham_count)
+
+# Print predictions using Bayes
+print("Prediction using Bayes for word sale:", predict_bayes("sale"))
+print("Prediction using Bayes for word lottery:", predict_bayes("lottery"))
+print()
+
+# Predict using Naive Bayes
+def predict_naive_bayes(email):
+    words = set(email.lower().split())
+    prod_spams = np.prod([model.get(word, {'spam': 1})['spam'] for word in words]) * num_spam
+    prod_hams = np.prod([model.get(word, {'ham': 1})['ham'] for word in words]) * (num_emails - num_spam)
+    return prod_spams / (prod_spams + prod_hams)
+
+# Print predictions using Naive Bayes
+print("Prediction using NaiveBayes for word lottery sale:", predict_naive_bayes("lottery sale"))
+print("Prediction using NaiveBayes for word asdfgh:", predict_naive_bayes("asdfgh"))
+print("Prediction using NaiveBayes for 'Hi mom how are you':", predict_naive_bayes('Hi mom how are you'))
